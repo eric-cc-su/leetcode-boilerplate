@@ -133,6 +133,13 @@ class DataStructureTest(TestCase):
         self.problem = Problem(PROBLEM_STRING, METHOD_DEF, data_structure=None)
         self.assertIsNone(self.problem.data_structure)
 
+    def testLinkedList(self) -> None:
+        self.problem = Problem(PROBLEM_STRING, METHOD_DEF, data_structure='linked_list')
+        self.assertEqual(self.problem.data_structure, "linked_list")
+
+    def testTree(self) -> None:
+        self.problem = Problem(PROBLEM_STRING, METHOD_DEF, data_structure='tree')
+        self.assertEqual(self.problem.data_structure, "tree")
 
 if __name__ == "__main__":
     unittest_main()
