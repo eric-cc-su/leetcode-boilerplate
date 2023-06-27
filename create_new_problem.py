@@ -41,7 +41,7 @@ class Problem:
         self.method_def = method_def
         self.parse_method_definition()
 
-        self.class_name = "Solution" if class_name is None else class_name.capitalize()
+        self.class_name = "Solution" if class_name is None else class_name
 
         self.data_structure = DATA_STRUCTURE_IMPORTS.get(data_structure)
 
