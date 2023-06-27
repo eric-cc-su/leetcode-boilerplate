@@ -33,7 +33,7 @@ DATA_STRUCTURE_TEST = {
 class Problem:
     def __init__(self, problem_string: str, method_def: str,
                  directory: Optional[str]=".",
-                 class_name: Optional[str]=None, no_encase: Optional[bool]=False,
+                 classname: Optional[str]=None, no_encase: Optional[bool]=False,
                  data_structure: Optional[str]=None, filename: Optional[str]=None) -> None:
         self.problem_string = problem_string
         self.parse_problem_string()
@@ -41,7 +41,7 @@ class Problem:
         self.method_def = method_def
         self.parse_method_definition()
 
-        self.class_name = "Solution" if class_name is None else class_name
+        self.classname = "Solution" if classname is None else classname
 
         self.data_structure = DATA_STRUCTURE_IMPORTS.get(data_structure)
 
@@ -108,7 +108,7 @@ class Problem:
 
                 # Write solution class
                 if self.encase:
-                    file.write(f'class {self.class_name}:\n')
+                    file.write(f'class {self.classname}:\n')
                 
                 # Write solution method if provided
                 if self.method_def:
@@ -121,9 +121,9 @@ class Problem:
                     file.write(f"{INDENT}pass\n\n" + ("\n" if self.encase else ""))
             
                 # Write solution test case
-                file.write(f"class {self.class_name}Test(unittest.TestCase):\n")
+                file.write(f"class {self.classname}Test(unittest.TestCase):\n")
                 file.write(f"{INDENT}def setUp(self) -> None:\n")
-                file.write(f"{INDENT}{INDENT}sol = {self.class_name}()\n")
+                file.write(f"{INDENT}{INDENT}sol = {self.classname}()\n")
                 if self.method_name:
                     file.write(f'{INDENT}{INDENT}self.solution = sol.{self.method_name}\n')
                 if self.data_structure:
@@ -147,7 +147,7 @@ if __name__ == "__main__":
     )
 
     parser.add_argument("--directory", help="The directory to create the new file. Default value is the current working directory", default=".")
-    parser.add_argument("--class-name", help='Provide a manual name for the solution class. Default value is "Solution"', default="Solution")
+    parser.add_argument("--classname", help='Provide a manual name for the solution class. Default value is "Solution"', default="Solution")
     parser.add_argument("--data-structure", help="Data structure to include. Options include: linked_list, tree")
     parser.add_argument("--filename", help="Provide a manual filename. A filename will be generated in the format 'p#-problem_name.py' if not provided")
     parser.add_argument("--no-encase", help="Do not encase the solution in a class", action="store_true")
