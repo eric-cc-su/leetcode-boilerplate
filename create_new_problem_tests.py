@@ -120,5 +120,26 @@ class MethodTest(TestCase):
 
         self.assertEqual(problem.method_def, '')
 
+
+class DataStructureTest(TestCase):
+    def testInvalid(self) -> None:
+        with self.assertRaises(ValueError):
+            self.problem = Problem(PROBLEM_STRING, METHOD_DEF, data_structure="structure")
+
+    def testNone(self) -> None:
+        self.problem = Problem(PROBLEM_STRING, METHOD_DEF)
+        self.assertIsNone(self.problem.data_structure)
+
+        self.problem = Problem(PROBLEM_STRING, METHOD_DEF, data_structure=None)
+        self.assertIsNone(self.problem.data_structure)
+
+    def testLinkedList(self) -> None:
+        self.problem = Problem(PROBLEM_STRING, METHOD_DEF, data_structure='linked_list')
+        self.assertEqual(self.problem.data_structure, "linked_list")
+
+    def testTree(self) -> None:
+        self.problem = Problem(PROBLEM_STRING, METHOD_DEF, data_structure='tree')
+        self.assertEqual(self.problem.data_structure, "tree")
+
 if __name__ == "__main__":
     unittest_main()
