@@ -31,7 +31,8 @@ DATA_STRUCTURE_TEST = {
 
 
 class Problem:
-    def __init__(self, directory: str, problem_string: str, method_def: str,
+    def __init__(self, problem_string: str, method_def: str,
+                 directory: Optional[str]=".",
                  class_name: Optional[str]=None, no_encase: Optional[bool]=False,
                  data_structure: Optional[str]=None, filename: Optional[str]=None) -> None:
         self.problem_string = problem_string
@@ -145,8 +146,8 @@ if __name__ == "__main__":
         description="Creates a new Python 3 file with complete boilerplate for a new Leetcode problem that comes with unit testing and support for Leetcode's classes of certain data structures."
     )
 
-    parser.add_argument("directory", help="The directory to create the new file. Leave blank to create in current directory", default="")
-    parser.add_argument("--class-name", help='Provide a manual name for the solution class. By default, the class name is "Solution"', default="Solution")
+    parser.add_argument("--directory", help="The directory to create the new file. Default value is the current working directory", default=".")
+    parser.add_argument("--class-name", help='Provide a manual name for the solution class. Default value is "Solution"', default="Solution")
     parser.add_argument("--data-structure", help="Data structure to include. Options include: linked_list, tree")
     parser.add_argument("--filename", help="Provide a manual filename. A filename will be generated in the format 'p#-problem_name.py' if not provided")
     parser.add_argument("--no-encase", help="Do not encase the solution in a class", action="store_true")
