@@ -48,7 +48,7 @@ class Problem:
         
         if filename:
             self.filename = filename
-        self.filepath = os.path.join(directory, self.filename)
+        self.filepath = os.path.join(os.path.abspath(directory), self.filename)
 
         # Check if a file already exists with the same name
         if os.path.exists(self.filename):

@@ -33,25 +33,25 @@ class FilepathTest(TestCase):
     def testCurrentDirectory(self) -> None:
         problem = Problem(CURRENT_DIRECTORY, PROBLEM_STRING, METHOD_DEF)
 
-        self.assertEqual(problem.filepath, FILENAME)
+        self.assertEqual(problem.filepath, os.path.abspath(FILENAME))
 
     def testChildDirectory(self) -> None:
         problem = Problem(CHILD_DIRECTORY, PROBLEM_STRING, METHOD_DEF)
 
-        self.assertEqual(problem.filepath, os.path.join(CHILD_DIRECTORY, FILENAME))
+        self.assertEqual(problem.filepath, os.path.join(os.path.abspath(CHILD_DIRECTORY), FILENAME))
 
     def testParentDirectory(self) -> None:
         problem = Problem(PARENT_DIRECTORY, PROBLEM_STRING, METHOD_DEF)
 
-        self.assertEqual(problem.filepath, os.path.join(PARENT_DIRECTORY, FILENAME))
+        self.assertEqual(problem.filepath, os.path.join(os.path.abspath(PARENT_DIRECTORY), FILENAME))
 
     def testMissingSlash(self) -> None:
         # Tests whether a valid filepath is created in the event the directory name is provided without a trailing slash
         problem = Problem("..", PROBLEM_STRING, METHOD_DEF)
-        self.assertEqual(problem.filepath, os.path.join("..", FILENAME))
+        self.assertEqual(problem.filepath, os.path.join(os.path.abspath(".."), FILENAME))
 
         problem = Problem("child", PROBLEM_STRING, METHOD_DEF)
-        self.assertEqual(problem.filepath, os.path.join("child", FILENAME))
+        self.assertEqual(problem.filepath, os.path.join(os.path.abspath("child"), FILENAME))
 
 
 class FilenameTest(TestCase):
