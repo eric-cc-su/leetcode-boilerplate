@@ -120,5 +120,19 @@ class MethodTest(TestCase):
 
         self.assertEqual(problem.method_def, '')
 
+
+class DataStructureTest(TestCase):
+    def testInvalid(self) -> None:
+        with self.assertRaises(ValueError):
+            self.problem = Problem(PROBLEM_STRING, METHOD_DEF, data_structure="structure")
+
+    def testNone(self) -> None:
+        self.problem = Problem(PROBLEM_STRING, METHOD_DEF)
+        self.assertIsNone(self.problem.data_structure)
+
+        self.problem = Problem(PROBLEM_STRING, METHOD_DEF, data_structure=None)
+        self.assertIsNone(self.problem.data_structure)
+
+
 if __name__ == "__main__":
     unittest_main()

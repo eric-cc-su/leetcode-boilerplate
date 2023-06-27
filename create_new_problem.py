@@ -43,7 +43,9 @@ class Problem:
 
         self.classname = "Solution" if classname is None else classname
 
-        self.data_structure = DATA_STRUCTURE_IMPORTS.get(data_structure)
+        if data_structure and data_structure not in DATA_STRUCTURE_IMPORTS.keys():
+            raise ValueError(f"Data structure {data_structure} not supported")
+        self.data_structure = data_structure
 
         self.encase = not no_encase
         
@@ -148,7 +150,7 @@ if __name__ == "__main__":
 
     parser.add_argument("--directory", help="The directory to create the new file. Default value is the current working directory", default=".")
     parser.add_argument("--classname", help='Provide a manual name for the solution class. Default value is "Solution"', default="Solution")
-    parser.add_argument("--data-structure", help="Data structure to include. Options include: linked_list, tree")
+    parser.add_argument("--data-structure", help="Data structure to include.", choices=[None, "linked_list", "tree"])
     parser.add_argument("--filename", help="Provide a manual filename. A filename will be generated in the format 'p#-problem_name.py' if not provided")
     parser.add_argument("--no-encase", help="Do not encase the solution in a class", action="store_true")
 
@@ -163,9 +165,8 @@ if __name__ == "__main__":
     try:
         problem = Problem(problem_string, method_def, **vars(args))
         problem.write_file()
-        print(f"File created at {problem.filename}")
+        print(f'File created at {problem.filename}\n')
     except FileExistsError as error:
-        print(f'ERROR: A file with the same file name already exists. Please use the --filename argument to provide a custom filename')
+        print(f'ERROR: A file with the same file name already exists. Please use the --filename argument to provide a custom filename\n')
     except Exception as error:
         print(f'ERROR: {error}')
-        print("File not created")
