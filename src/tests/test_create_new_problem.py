@@ -1,6 +1,6 @@
 import os
 
-from create_new_problem import Problem
+from build_leetcode_python_eric_cc_su.create_new_problem import Problem
 from unittest import TestCase, main as unittest_main
 
 PROBLEM_STRING = "123. Hello World"
