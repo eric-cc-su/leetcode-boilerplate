@@ -179,6 +179,17 @@ class MethodTest(TestCase):
 
         self.assertEqual(problem.method_def, '')
 
+    def testTypingImports(self) -> None:
+        # Tests whether a typing imports are properly extracted from the given method definition
+        problem = Problem(PROBLEM_STRING, METHOD_DEF)
+        self.assertEqual(len(problem.typing_imports), 1)
+        self.assertIn("Optional", problem.typing_imports)
+
+        problem = Problem(PROBLEM_STRING, "def reverseList(self, head: Optional[ListNode], stuff: List[int]) -> Optional[ListNode]:")
+        self.assertEqual(len(problem.typing_imports), 2)
+        self.assertIn("List", problem.typing_imports)
+        self.assertIn("Optional", problem.typing_imports)
+
 
 class DataStructureTest(TestCase):
     def testInvalid(self) -> None:

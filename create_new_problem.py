@@ -12,7 +12,7 @@
 import argparse
 import os
 
-from re import match as re_match, sub as re_sub
+from re import findall, match as re_match, sub as re_sub
 from sys import argv
 from typing import Optional
 
@@ -20,8 +20,8 @@ from typing import Optional
 INDENT = "    "
 
 DATA_STRUCTURE_IMPORTS = {
-    'linked_list': 'from leetcode_linkedlist import LinkedList, ListNode\nfrom typing import Optional\n\n',
-    'tree': 'from leetcode_treenode import Tree, TreeNode\nfrom typing import Optional\n\n',
+    'linked_list': 'from leetcode_linkedlist import LinkedList, ListNode\n',
+    'tree': 'from leetcode_treenode import Tree, TreeNode\n',
 }
 
 DATA_STRUCTURE_TEST = {
@@ -35,17 +35,24 @@ class Problem:
                  directory: Optional[str]=".",
                  classname: Optional[str]=None, no_encase: Optional[bool]=False,
                  data_structure: Optional[str]=None, filename: Optional[str]=None) -> None:
+        # Handle problem string
         self.problem_string = problem_string
         self.parse_problem_string()
         
+        self.typing_imports = set()
+        # Handle data structure
+        # Needs to be done before handling method definition to avoid overwriting typing_imports
+        if data_structure and data_structure not in DATA_STRUCTURE_IMPORTS.keys():
+            raise ValueError(f"Data structure {data_structure} not supported")
+        else:
+            self.typing_imports.add("Optional")
+        self.data_structure = data_structure
+
+        # Handle method definition, including typing_imports parsing
         self.method_def = method_def
         self.parse_method_definition()
 
         self.classname = "Solution" if classname is None else classname
-
-        if data_structure and data_structure not in DATA_STRUCTURE_IMPORTS.keys():
-            raise ValueError(f"Data structure {data_structure} not supported")
-        self.data_structure = data_structure
 
         self.encase = not no_encase
         
@@ -98,15 +105,22 @@ class Problem:
 
         self.method_name = method_match.group("method_name")
 
+        # Pattern to look for typing imports
+        typing_pattern = r'(List|Optional)\[\w+\]'
+        self.typing_imports = set(findall(typing_pattern, self.method_def))
+
     def write_file(self) -> None:
         try:
             with open(self.filepath, 'w') as file:
                 # Write headers and imports
                 file.write(f'# {self.problem_string}\n')
+                file.write('import unittest\n')
                 # Include imports for data structures
                 if self.data_structure:
                     file.write(DATA_STRUCTURE_IMPORTS[self.data_structure])
-                file.write('import unittest\n\n\n')
+                if self.typing_imports:
+                    file.write(f'from typing import {", ".join(sorted(self.typing_imports))}\n')
+                file.write('\n\n')
 
                 # Write solution class
                 if self.encase:
@@ -165,7 +179,7 @@ if __name__ == "__main__":
     try:
         problem = Problem(problem_string, method_def, **vars(args))
         problem.write_file()
-        print(f'File created at {problem.filename}\n')
+        print(f'File created at {problem.filepath}\n')
     except FileExistsError as error:
         print(f'ERROR: A file with the same file name already exists. Please use the --filename argument to provide a custom filename\n')
     except Exception as error:
