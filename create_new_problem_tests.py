@@ -1,4 +1,5 @@
 import os
+import shutil
 
 from create_new_problem import Problem
 from unittest import TestCase, main as unittest_main
@@ -7,11 +8,37 @@ PROBLEM_STRING = "123. Hello World"
 METHOD_DEF = "def searchBST(self, root: Optional[TreeNode], val: int) -> Optional[TreeNode]:"
 FILENAME = "p123-hello_world.py"
 CURRENT_DIRECTORY = "./"
-CHILD_DIRECTORY = "child/"
+CHILD_DIRECTORY = "test-child/"
 PARENT_DIRECTORY = "../"
 
+class FileWriteTestCase(TestCase):
+    @classmethod
+    def setUpClass(cls) -> None:
+        # Set up empty test child directory before running all tests
+        if not os.path.exists(CHILD_DIRECTORY):
+            os.makedirs(CHILD_DIRECTORY)
+        return super().setUpClass()
+    
+    @classmethod
+    def tearDownClass(cls) -> None:
+        # Delete the entire test child directory after test suite
+        if os.path.exists(CHILD_DIRECTORY):
+            shutil.rmtree(CHILD_DIRECTORY)
+        return super().tearDownClass()
+    
+    def tearDown(self) -> None:
+        # Delete any straggler test files after a test
+        if os.path.exists(FILENAME):
+            os.remove(FILENAME)
+        if os.path.exists(os.path.join(CHILD_DIRECTORY, FILENAME)):
+            os.remove(os.path.join(CHILD_DIRECTORY, FILENAME))
+        if os.path.exists(os.path.join(PARENT_DIRECTORY, FILENAME)):
+            os.remove(os.path.join(PARENT_DIRECTORY), FILENAME)
+        
+        return super().tearDown()
 
-class ProblemTest(TestCase):
+
+class ProblemTest(FileWriteTestCase):
     def testInit(self) -> None:
         problem = Problem(PROBLEM_STRING, METHOD_DEF)
         self.assertIsInstance(problem, Problem)
@@ -27,31 +54,63 @@ class ProblemTest(TestCase):
         self.assertEqual(problem.method_name, "searchBST")
 
         self.assertTrue(problem.encase)
+    
+    def testWriteFile(self) -> None:
+        problem = Problem(PROBLEM_STRING, METHOD_DEF)
+        self.assertFalse(os.path.exists(problem.filepath))
+        problem.write_file()
+        self.assertTrue(os.path.exists(problem.filepath))
+        os.remove(problem.filepath)
 
 
-class FilepathTest(TestCase):
+class FilepathTest(FileWriteTestCase):
     def testCurrentDirectory(self) -> None:
         problem = Problem(PROBLEM_STRING, METHOD_DEF, directory=CURRENT_DIRECTORY)
-
         self.assertEqual(problem.filepath, os.path.abspath(FILENAME))
+
+        self.assertFalse(os.path.exists(FILENAME))
+        problem.write_file()
+        self.assertTrue(os.path.exists(FILENAME))
+        os.remove(problem.filepath)
 
     def testChildDirectory(self) -> None:
         problem = Problem(PROBLEM_STRING, METHOD_DEF, directory=CHILD_DIRECTORY)
-
         self.assertEqual(problem.filepath, os.path.join(os.path.abspath(CHILD_DIRECTORY), FILENAME))
+
+        self.assertTrue(os.path.exists(CHILD_DIRECTORY))
+
+        self.assertFalse(os.path.exists(problem.filepath))
+        problem.write_file()
+        self.assertTrue(os.path.exists(problem.filepath))
+        self.assertFalse(os.path.exists(FILENAME))
+        os.remove(problem.filepath)
 
     def testParentDirectory(self) -> None:
         problem = Problem(PROBLEM_STRING, METHOD_DEF, directory=PARENT_DIRECTORY)
-
         self.assertEqual(problem.filepath, os.path.join(os.path.abspath(PARENT_DIRECTORY), FILENAME))
+
+        self.assertFalse(os.path.exists(problem.filepath))
+        problem.write_file()
+        self.assertTrue(os.path.exists(problem.filepath))
+        self.assertFalse(os.path.exists(FILENAME))
+        os.remove(problem.filepath)
 
     def testMissingSlash(self) -> None:
         # Tests whether a valid filepath is created in the event the directory name is provided without a trailing slash
-        problem = Problem(PROBLEM_STRING, METHOD_DEF, directory="..")
-        self.assertEqual(problem.filepath, os.path.join(os.path.abspath(".."), FILENAME))
+        problem = Problem(PROBLEM_STRING, METHOD_DEF, directory=PARENT_DIRECTORY.strip("/"))
+        self.assertEqual(problem.filepath, os.path.join(os.path.abspath(PARENT_DIRECTORY.strip("/")), FILENAME))
 
-        problem = Problem(PROBLEM_STRING, METHOD_DEF, directory="child")
-        self.assertEqual(problem.filepath, os.path.join(os.path.abspath("child"), FILENAME))
+        problem.write_file()
+        self.assertTrue(os.path.exists(problem.filepath))
+        os.remove(problem.filepath)
+        
+        problem = Problem(PROBLEM_STRING, METHOD_DEF, directory=CHILD_DIRECTORY.strip("/"))
+        self.assertEqual(problem.filepath, os.path.join(os.path.abspath(CHILD_DIRECTORY.strip("/")), FILENAME))
+
+        self.assertTrue(os.path.exists(CHILD_DIRECTORY))
+        problem.write_file()
+        self.assertTrue(os.path.exists(problem.filepath))
+        os.remove(problem.filepath)
 
 
 class FilenameTest(TestCase):

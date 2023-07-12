@@ -54,7 +54,7 @@ class Problem:
         self.filepath = os.path.join(os.path.abspath(directory), self.filename)
 
         # Check if a file already exists with the same name
-        if os.path.exists(self.filename):
+        if os.path.exists(self.filepath):
             raise FileExistsError
 
     def parse_problem_string(self) -> None:
@@ -100,7 +100,7 @@ class Problem:
 
     def write_file(self) -> None:
         try:
-            with open(self.filename, 'w') as file:
+            with open(self.filepath, 'w') as file:
                 # Write headers and imports
                 file.write(f'# {self.problem_string}\n')
                 # Include imports for data structures
