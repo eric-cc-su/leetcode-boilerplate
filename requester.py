@@ -2,14 +2,22 @@ import argparse
 import requests
 
 from re import match as re_match
+from requests.exceptions import ConnectTimeout, ReadTimeout
+from typing import Optional
 
 CSRFTOKEN_KEY = "csrftoken"
 
+
 class LeetcodeRequester:
-    def __init__(self, url: str) -> None:
+    def __init__(self, url: str, request_timeout: Optional[int]=10) -> None:
+        # Requester
+        self.request_timeout = request_timeout
+
         # HTTP/GraphQL 
-        self._urlpattern = r"https://leetcode.com/problems/(?P<slug>[a-z0-9]+(?:-[a-z0-9]+)*)/"
+        self._urlpattern = r"https://leetcode.com/problems/(?P<slug>[a-z0-9]+(?:-[a-z0-9]+)*)/?"
         self._apiurl = "https://leetcode.com/graphql/"
+        # Flag to stop further execution in case of failure
+        self.abort_all = False
         
         self.url = url
         self.slug = re_match(self._urlpattern, self.url).group('slug')
@@ -17,21 +25,30 @@ class LeetcodeRequester:
         self.cookie_dict = {}
         self.api_headers = {}
 
-        print("Requesting...")
-        self.request_main()
-        self.request_question_info()
-      
         # Question data
         self.question_num = None
         self.question_title = None
         self.code_snippets = None
+
+        # Execution
+        print("\nRequesting...")
+        self.request_main()
+        self.request_question_info()
     
     def request_main(self) -> None:
-        main_r = requests.get(self.url)
+        if self.abort_all:
+            return
+
+        try:
+            main_r = requests.get(self.url, timeout=self.request_timeout)
+        except (ConnectTimeout, ReadTimeout):
+            print("Request to Leetcode page timed out")
+            self.abort_all = True
+            return
+
         if main_r.status_code != 200:
-            raise ValueError(f"Main request got an unexpected response: ${main_r.status_code} - ${main_r.reason}")
+            raise ValueError(f"Request to Leetcode page got an unexpected response: ${main_r.status_code} - ${main_r.reason}")
     
-        # print(f"csrftoken cookie: {main_r.cookies.get(CSRFTOKEN_KEY)}")
         self.cookie_dict[CSRFTOKEN_KEY] = main_r.cookies.get(CSRFTOKEN_KEY)
         self.api_headers[f"x-{CSRFTOKEN_KEY}"] = main_r.cookies.get(CSRFTOKEN_KEY)
     
@@ -52,13 +69,23 @@ class LeetcodeRequester:
         }
 
     def request_question_info(self) -> None:
-        qinfo_r = requests.post(self._apiurl,
-                                 json=self._form_question_title_snippets_query(),
-                                 cookies=self.cookie_dict,
-                                 headers=self.api_headers)
-        print("API: question info requested")
+        if self.abort_all:
+            return
+
+        try:
+            qinfo_r = requests.post(self._apiurl,
+                                    json=self._form_question_title_snippets_query(),
+                                    cookies=self.cookie_dict,
+                                    headers=self.api_headers,
+                                    timeout=self.request_timeout)
+            print("API: question info requested")
+        except (ConnectTimeout, ReadTimeout):
+            print("API: Request to Leetcode API timed out")
+            self.abort_all = True
+            return
+
         if qinfo_r.status_code != 200:
-            raise ValueError(f"Main request got an unexpected response: ${qinfo_r.status_code} - ${qinfo_r.reason}")
+            raise ValueError(f"API: Request to Leetcode got an unexpected response: ${qinfo_r.status_code} - ${qinfo_r.reason}")
 
         _response = qinfo_r
         r_content = _response.json()
@@ -73,6 +100,7 @@ class LeetcodeRequester:
         self.code_snippets = {
             obj["langSlug"]: obj for obj in q_data["codeSnippets"]
         }
+        print("API: Question info retrieved")
 
     
 if __name__ == "__main__":
@@ -85,6 +113,5 @@ if __name__ == "__main__":
   
     try:
         requester = LeetcodeRequester(leetcode_url)
-        # print("Page requested")
     except Exception as error:
-        print(f'ERROR: {error}')
+        print(f'{type(error)}: {error}')

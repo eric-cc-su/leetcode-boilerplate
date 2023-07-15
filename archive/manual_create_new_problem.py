@@ -3,15 +3,16 @@
 # Python 3.6+ required
 #
 # Inputs:
-# - The Leetcode URL
-# Optional:
-# - directory
-# - file name
-# - data structure
+# 1. The problem number
+# 2. The file name
+# 3. The full problem name (For display purposes)
+# 4. Whether the solution needs to be encased in a class (default to True)
+# 5. The solution method name
+# 6. copy-paste of method declaration
 import argparse
 import os
 
-from re import findall, search as re_search
+from re import findall, match as re_match, search as re_search, sub as re_sub
 from sys import argv
 from typing import Optional
 
@@ -32,23 +33,16 @@ DATA_STRUCTURE_TEST = {
 
 
 class Problem:
-    def __init__(self, url: str,
+    def __init__(self, problem_string: str, method_def: str,
                  directory: Optional[str]=".",
+                 classname: Optional[str]=None, no_encase: Optional[bool]=False,
                  data_structure: Optional[str]=None, filename: Optional[str]=None) -> None:
         # Initiate requester
         self._requester = LeetcodeRequester(url)
 
         # Handle problem string
-        self.problem_string = None
-        self.assemble_problem_string_and_filename()
-
-        if filename:
-            self.filename = filename
-        self.filepath = os.path.join(os.path.abspath(directory), self.filename)
-
-        # Check if a file already exists with the same name
-        if os.path.exists(self.filepath):
-            raise FileExistsError
+        self.problem_string = problem_string
+        self.parse_problem_string()
         
         self.typing_imports = set()
         # Handle data structure
@@ -60,10 +54,20 @@ class Problem:
         self.data_structure = data_structure
 
         # Handle method definition, including typing_imports parsing
-        self.classname = "Solution"
-        self.method_name = None
-        self.class_and_method = None
-        self.assemble_code()
+        self.method_def = method_def
+        self.parse_method_definition()
+
+        self.classname = "Solution" if not classname else classname
+
+        self.encase = not no_encase
+        
+        if filename:
+            self.filename = filename
+        self.filepath = os.path.join(os.path.abspath(directory), self.filename)
+
+        # Check if a file already exists with the same name
+        if os.path.exists(self.filepath):
+            raise FileExistsError
 
     def assemble_problem_string_and_filename(self) -> None:
         """
@@ -72,35 +76,50 @@ class Problem:
         self.problem_string = f'{self._requester.question_num}. {self._requester.question_title}'
         self.filename = f'p{self._requester.question_num}-{self._requester.slug}.py'
 
-    def assemble_code(self) -> None:
+    def parse_problem_string(self) -> None:
         """
-        Use requester's code snippet to assemble code content
+        DEPRECATED - Parse the problem string to create the filename and correct spacing issues
         """
-        if self._requester.code_snippets.get("python3"):
-            self.class_and_method = self._requester.code_snippets["python3"]["code"]
-        else:
-            print("Could not find starting code snippet")
+        pattern = r'(?P<problem_num>\d+)(?P<period>\.)?(?P<leading_space>\s)?(?P<problem_name>[\w\s]+)'
+        match = re_match(pattern, self.problem_string)
+
+        if not match:
+            raise Exception("Problem string could not be parsed")
+
+        # Correct problem string
+        problem_words = re_sub(r'\s+', ' ', match.group("problem_name"))
+        self.problem_string = f'{match.group("problem_num")}. {problem_words}'
+        
+        # Create filename in format 'p123-problem_name.py'
+        filename_words = re_sub(r'\s+','_',match.group("problem_name").lower())
+        self.filename = f'p{match.group("problem_num")}-{filename_words}.py'
+
+    def parse_method_definition(self) -> None:
+        """
+        DEPRECATED - Parse the method definition string.
+
+        Now supports blank method definition and makes no assumption about what method the user wants.
+
+        This is applicable for problems where the solution is a custom class.
+        """
+        pattern = r'def\s+(?P<method_name>\w+)\(([\w\s:\[\],]+)?\)(\s->[\s\w\[\]]+)?:'
+        
+        self.method_def = self.method_def.strip(' ')
+        
+        if not self.method_def:
+            self.method_name = None
             return
         
-        # Pattern to ID class name
-        class_pattern = r'class (?P<classname>\w+)\([\w\s:\[\],]+?\)?:'
-        class_match = re_search(class_pattern, self.class_and_method)
-
-        if class_match:
-            self.classname = class_match.group("classname")
-        
-        # Pattern to ID and extract the method definition
-        method_def_pattern = r'def\s+(?P<method_name>\w+)\(([\w\s:\[\],]+)?\)(\s->[\s\w\[\]]+)?:'
-        method_match = re_search(method_def_pattern, self.class_and_method)
+        method_match = re_match(pattern, self.method_def)
 
         if not method_match:
-            raise Exception("Method definition could not be parsed:", self.class_and_method)
+            raise Exception("Method definition could not be parsed")
 
         self.method_name = method_match.group("method_name")
-    
+
         # Pattern to look for typing imports
         typing_pattern = r'(List|Optional)\[\w+\]'
-        self.typing_imports = set(findall(typing_pattern, self.class_and_method))
+        self.typing_imports = set(findall(typing_pattern, self.method_def))
 
     def write_file(self) -> None:
         try:
@@ -115,10 +134,20 @@ class Problem:
                     file.write(f'from typing import {", ".join(sorted(self.typing_imports))}\n')
                 file.write('\n\n')
 
-                # Write solution class and method
-                file.write(self.class_and_method)
-                file.write('pass\n\n\n')
+                # Write solution class
+                if self.encase:
+                    file.write(f'class {self.classname}:\n')
                 
+                # Write solution method if provided
+                if self.method_def:
+                    method_dec_str = f'{self.method_def}\n'
+                    if self.encase:
+                        method_dec_str = INDENT + method_dec_str
+                    file.write(method_dec_str)
+                    file.write(f"{2*INDENT}pass\n\n\n")
+                else:
+                    file.write(f"{INDENT}pass\n\n" + ("\n" if self.encase else ""))
+            
                 # Write solution test case
                 file.write(f"class {self.classname}Test(unittest.TestCase):\n")
                 file.write(f"{INDENT}def setUp(self) -> None:\n")
@@ -146,21 +175,24 @@ if __name__ == "__main__":
     )
 
     parser.add_argument("--directory", help="The directory to create the new file. Default value is the current working directory", default=".")
+    parser.add_argument("--classname", help='Provide a manual name for the solution class. Default value is "Solution"', default="Solution")
     parser.add_argument("--data-structure", help="Data structure to include.", choices=[None, "linked_list", "tree"])
     parser.add_argument("--filename", help="Provide a manual filename. A filename will be generated in the format 'p#-problem_name.py' if not provided")
+    parser.add_argument("--no-encase", help="Do not encase the solution in a class", action="store_true")
 
     args=parser.parse_args()
 
-    os.system('cls' if os.name == 'nt' else 'clear')
-    print("Copy and paste the complete Leetcode URL:")
-    leetcode_url = input()
+    print("Copy and paste the problem headliner (ex. '123. Hello World')")
+    problem_string = input()
+    
+    print("Copy and paste the method definition (ex. 'def helloWorld(self, args...):')")
+    method_def = input()
 
     try:
-        problem = Problem(leetcode_url, **vars(args))
+        problem = Problem(problem_string, method_def, **vars(args))
         problem.write_file()
-        os.system('cls' if os.name == 'nt' else 'clear')
-        print(f'\nFile created at {problem.filepath}\n')
+        print(f'File created at {problem.filepath}\n')
     except FileExistsError as error:
-        print(f'\nFILE ERROR: A file with the same file name already exists. Please use the --filename argument to provide a custom filename\n')
-    except Exception as error:
-        print(f'{type(error)}: {error}')
+        print(f'ERROR: A file with the same file name already exists. Please use the --filename argument to provide a custom filename\n')
+    # except Exception as error:
+    #     print(f'ERROR: {error}')
