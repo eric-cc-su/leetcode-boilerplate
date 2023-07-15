@@ -30,12 +30,12 @@ class LeetcodeRequester:
         self.question_title = None
         self.code_snippets = None
 
-        # Execution
+    def request(self) -> None:
         print("\nRequesting...")
-        self.request_main()
-        self.request_question_info()
-    
-    def request_main(self) -> None:
+        self._request_main()
+        self._request_question_info()
+
+    def _request_main(self) -> None:
         if self.abort_all:
             return
 
@@ -68,7 +68,7 @@ class LeetcodeRequester:
             "operationName":"questionEditorData"
         }
 
-    def request_question_info(self) -> None:
+    def _request_question_info(self) -> None:
         if self.abort_all:
             return
 
@@ -78,7 +78,7 @@ class LeetcodeRequester:
                                     cookies=self.cookie_dict,
                                     headers=self.api_headers,
                                     timeout=self.request_timeout)
-            print("API: question info requested")
+            print("API: Question info requested")
         except (ConnectTimeout, ReadTimeout):
             print("API: Request to Leetcode API timed out")
             self.abort_all = True
@@ -113,5 +113,6 @@ if __name__ == "__main__":
   
     try:
         requester = LeetcodeRequester(leetcode_url)
+        requester.request()
     except Exception as error:
         print(f'{type(error)}: {error}')

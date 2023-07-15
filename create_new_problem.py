@@ -40,15 +40,15 @@ class Problem:
 
         # Handle problem string
         self.problem_string = None
-        self.assemble_problem_string_and_filename()
+
+        self.directory = directory
+        self.filename = filename
 
         if filename:
-            self.filename = filename
-        self.filepath = os.path.join(os.path.abspath(directory), self.filename)
-
-        # Check if a file already exists with the same name
-        if os.path.exists(self.filepath):
-            raise FileExistsError
+            self.filepath = os.path.join(os.path.abspath(self.directory), self.filename)
+            # Check if a file already exists with the same name
+            if os.path.exists(self.filepath):
+                raise FileExistsError
         
         self.typing_imports = set()
         # Handle data structure
@@ -63,16 +63,17 @@ class Problem:
         self.classname = "Solution"
         self.method_name = None
         self.class_and_method = None
-        self.assemble_code()
 
-    def assemble_problem_string_and_filename(self) -> None:
+    def _assemble_problem_string_and_filename(self) -> None:
         """
         Use the requester's data to assemble the problem title string
         """
         self.problem_string = f'{self._requester.question_num}. {self._requester.question_title}'
-        self.filename = f'p{self._requester.question_num}-{self._requester.slug}.py'
+        if not self.filename:
+            self.filename = f'p{self._requester.question_num}-{self._requester.slug}.py'
+            self.filepath = os.path.join(os.path.abspath(self.directory), self.filename)
 
-    def assemble_code(self) -> None:
+    def _assemble_code(self) -> None:
         """
         Use requester's code snippet to assemble code content
         """
@@ -101,6 +102,17 @@ class Problem:
         # Pattern to look for typing imports
         typing_pattern = r'(List|Optional)\[\w+\]'
         self.typing_imports = set(findall(typing_pattern, self.class_and_method))
+
+    def request(self) -> None:
+        # Request and process data from Leetcode
+        self._requester.request()
+        self._assemble_problem_string_and_filename()
+
+        # Check if a file already exists with the same name
+        if os.path.exists(self.filepath):
+            raise FileExistsError
+
+        self._assemble_code()
 
     def write_file(self) -> None:
         try:
@@ -157,6 +169,7 @@ if __name__ == "__main__":
 
     try:
         problem = Problem(leetcode_url, **vars(args))
+        problem.request()
         problem.write_file()
         os.system('cls' if os.name == 'nt' else 'clear')
         print(f'\nFile created at {problem.filepath}\n')
