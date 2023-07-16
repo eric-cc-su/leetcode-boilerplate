@@ -70,6 +70,11 @@ class Problem:
         """
         Use the requester's data to assemble the problem title string
         """
+        if not self._requester.question_num:
+            raise AttributeError("Could not determine question number")
+        if not self._requester.question_title:
+            raise AttributeError("Could not determine question title")
+
         self.problem_string = f'{self._requester.question_num}. {self._requester.question_title}'
         if not self.filename:
             self.filename = f'p{self._requester.question_num}-{self._requester.slug}.py'
@@ -79,10 +84,13 @@ class Problem:
         """
         Use requester's code snippet to assemble code content
         """
+        if not self._requester.code_snippets:
+            raise AttributeError("Could not find starting code snippets")
+
         if self._requester.code_snippets.get("python3"):
             self.class_and_method = self._requester.code_snippets["python3"]["code"]
         else:
-            raise ValueError("Could not find starting code snippet")
+            raise KeyError("Could not find starting Python 3 code snippet")
         
         # Pattern to ID class name
         class_pattern = r'class (?P<classname>\w+)\([\w\s:\[\],]+?\)?:'

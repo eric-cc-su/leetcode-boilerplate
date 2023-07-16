@@ -1,9 +1,6 @@
 import os
-import shutil
 
 from create_new_problem import Problem
-import unittest
-from unittest import TestCase, main as unittest_main
 from src.tests.FileWriteTestCase import FileWriteTestCase
 
 LEETCODE_URL = "https://leetcode.com/problems/max-consecutive-ones-iii/?envType=study-plan-v2&envId=leetcode-75"

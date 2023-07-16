@@ -23,6 +23,18 @@ class ProblemTest(FileWriteTestCase):
         self.assertIsNone(self.problem.data_structure)
         self.assertIsInstance(self.problem.typing_imports, set)
         self.assertEqual(len(self.problem.typing_imports), 0)
+    
+    def testNoRequesterInfo(self) -> None:
+        self.assertIsNone(self.problem._requester.question_num)
+        self.assertIsNone(self.problem._requester.question_title)
+        self.assertIsNone(self.problem._requester.code_snippets)
+
+        with self.assertRaises(AttributeError):
+            self.problem._assemble_problem_string_and_filename()
+        
+        with self.assertRaises(AttributeError):
+            self.problem._assemble_code()
+
 
 class ProblemRequestedTest(FileWriteTestCase):
     @classmethod
