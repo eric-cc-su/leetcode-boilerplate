@@ -117,18 +117,3 @@ class LeetcodeRequester:
             "variables": {"titleSlug": self.slug},
             "operationName":"questionEditorData"
         }
-
-    
-if __name__ == "__main__":
-    parser=argparse.ArgumentParser(
-        description="Requests a problem from Leetcode"
-    )
-
-    print("Copy and paste the Leetcode URL:")
-    leetcode_url = input()
-  
-    try:
-        requester = LeetcodeRequester(leetcode_url)
-        requester.request()
-    except Exception as error:
-        print(f'{type(error)}: {error}')

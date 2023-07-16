@@ -15,7 +15,7 @@ from re import findall, search as re_search
 from sys import argv
 from typing import Optional
 
-from requester import LeetcodeRequester
+from LeetcodeRequester import LeetcodeRequester
 
 # Constant for how to indent (currently using one tab equals four spaces)
 INDENT = "    "
