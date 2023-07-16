@@ -43,6 +43,7 @@ class Problem:
 
         self.directory = directory
         self.filename = filename
+        self.filepath = None
 
         if filename:
             self.filepath = os.path.join(os.path.abspath(self.directory), self.filename)
@@ -53,10 +54,11 @@ class Problem:
         self.typing_imports = set()
         # Handle data structure
         # Needs to be done before handling method definition to avoid overwriting typing_imports
-        if data_structure and data_structure not in DATA_STRUCTURE_IMPORTS.keys():
-            raise ValueError(f"Data structure {data_structure} not supported")
-        else:
-            self.typing_imports.add("Optional")
+        if data_structure:
+            if data_structure not in DATA_STRUCTURE_IMPORTS.keys():
+                raise ValueError(f"Data structure {data_structure} not supported")
+            else:
+                self.typing_imports.add("Optional")
         self.data_structure = data_structure
 
         # Handle method definition, including typing_imports parsing
@@ -116,6 +118,13 @@ class Problem:
 
     def write_file(self) -> None:
         try:
+            if not self.filepath:
+                raise ValueError("File path is undefined")
+            if not self.problem_string:
+                raise ValueError("Problem title and number missing")
+            if not self.class_and_method:
+                raise ValueError("Problem class and method missing")
+
             with open(self.filepath, 'w') as file:
                 # Write headers and imports
                 file.write(f'# {self.problem_string}\n')
@@ -146,7 +155,8 @@ class Problem:
                 file.write(f"{INDENT}unittest.main()")
 
         except Exception as error:
-            os.remove(self.filename)
+            if self.filepath:
+                os.remove(self.filepath)
             print(f'\n{type(error).__name__} {error}')
             print("The file couldn't be written. Operation aborted")
 

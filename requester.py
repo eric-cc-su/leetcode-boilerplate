@@ -34,6 +34,8 @@ class LeetcodeRequester:
         print("\nRequesting...")
         self._request_main()
         self._request_question_info()
+        # reset for retries
+        self.abort_all = False
 
     def _request_main(self) -> None:
         if self.abort_all:
