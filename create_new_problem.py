@@ -45,7 +45,7 @@ class Problem:
         self.filename = filename
         self.filepath = None
 
-        if filename:
+        if self.filename:
             self.filepath = os.path.join(os.path.abspath(self.directory), self.filename)
             # Check if a file already exists with the same name
             if os.path.exists(self.filepath):
@@ -82,8 +82,7 @@ class Problem:
         if self._requester.code_snippets.get("python3"):
             self.class_and_method = self._requester.code_snippets["python3"]["code"]
         else:
-            print("Could not find starting code snippet")
-            return
+            raise ValueError("Could not find starting code snippet")
         
         # Pattern to ID class name
         class_pattern = r'class (?P<classname>\w+)\([\w\s:\[\],]+?\)?:'
