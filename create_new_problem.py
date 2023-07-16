@@ -34,9 +34,12 @@ DATA_STRUCTURE_TEST = {
 class Problem:
     def __init__(self, url: str,
                  directory: Optional[str]=".",
-                 data_structure: Optional[str]=None, filename: Optional[str]=None) -> None:
+                 data_structure: Optional[str]=None,
+                 filename: Optional[str]=None,
+                 timeout: Optional[int]=10,
+                 max_retries: Optional[int]=2) -> None:
         # Initiate requester
-        self._requester = LeetcodeRequester(url)
+        self._requester = LeetcodeRequester(url, request_timeout=timeout, max_retries=max_retries)
 
         # Handle problem string
         self.problem_string = None
@@ -177,6 +180,8 @@ if __name__ == "__main__":
     parser.add_argument("--directory", help="The directory to create the new file. Default value is the current working directory", default=".")
     parser.add_argument("--data-structure", help="Data structure to include.", choices=[None, "linked_list", "tree"])
     parser.add_argument("--filename", help="Provide a manual filename. A filename will be generated in the format 'p#-problem_name.py' if not provided")
+    parser.add_argument("--timeout", help="Specify a timeout, in seconds, for all requests. Default value is 10s.", default=10)
+    parser.add_argument("--max-retries", help="Specify a maximum number of retries for failed requests. Default value is 2", default=2)
 
     args=parser.parse_args()
 
