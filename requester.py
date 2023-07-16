@@ -9,9 +9,17 @@ CSRFTOKEN_KEY = "csrftoken"
 
 
 class LeetcodeRequester:
-    def __init__(self, url: str, request_timeout: Optional[int]=10) -> None:
+    def __init__(self, url: str, request_timeout: Optional[int]=10, max_retries: Optional[int]=2) -> None:
+        """
+        Initialize Leetcode requester to fetch and parse question data from Leetcode
+
+        :param str url: A URL to the Leetcode question
+        :param int request_timeout: The amount of time in seconds to allow single HTTP requests to stay alive
+        :param int retries: The maximum number of times to retry a connection that has failed
+        """
         # Requester
         self.request_timeout = request_timeout
+        self.max_retries = max_retries
 
         # HTTP/GraphQL 
         self._urlpattern = r"https://leetcode.com/problems/(?P<slug>[a-z0-9]+(?:-[a-z0-9]+)*)/?"
@@ -41,12 +49,15 @@ class LeetcodeRequester:
         if self.abort_all:
             return
 
-        try:
-            main_r = requests.get(self.url, timeout=self.request_timeout)
-        except (ConnectTimeout, ReadTimeout):
-            print("Request to Leetcode page timed out")
-            self.abort_all = True
-            return
+        for i in range(1 + self.max_retries):
+            try:
+                main_r = requests.get(self.url, timeout=self.request_timeout)
+                break
+            except (ConnectTimeout, ReadTimeout):
+                print("Request to Leetcode page timed out")
+                if i == self.max_retries:
+                    self.abort_all = True
+                    return
 
         if main_r.status_code != 200:
             raise ValueError(f"Request to Leetcode page got an unexpected response: ${main_r.status_code} - ${main_r.reason}")
@@ -54,37 +65,24 @@ class LeetcodeRequester:
         self.cookie_dict[CSRFTOKEN_KEY] = main_r.cookies.get(CSRFTOKEN_KEY)
         self.api_headers[f"x-{CSRFTOKEN_KEY}"] = main_r.cookies.get(CSRFTOKEN_KEY)
     
-    def _form_question_title_query(self) -> dict:
-        return {
-            "query": "\n    query questionTitle($titleSlug: String!) {\n  question(titleSlug: $titleSlug) {\n    questionId\n    questionFrontendId\n    title\n    titleSlug\n    isPaidOnly\n    difficulty\n    likes\n    dislikes\n  }\n}\n",
-            "variables": {
-                "titleSlug": self.slug
-            },
-            "operationName": "questionTitle"
-        }
-
-    def _form_question_title_snippets_query(self) -> dict:
-        return {
-            "query":"\n    query questionEditorData($titleSlug: String!) {\n  question(titleSlug: $titleSlug) {\n    questionId\n    questionFrontendId\n    title\n    codeSnippets {\n      lang\n      langSlug\n      code\n    }\n    envInfo\n    enableRunCode\n  }\n}\n    ",
-            "variables": {"titleSlug": self.slug},
-            "operationName":"questionEditorData"
-        }
-
     def _request_question_info(self) -> None:
         if self.abort_all:
             return
 
-        try:
-            qinfo_r = requests.post(self._apiurl,
-                                    json=self._form_question_title_snippets_query(),
-                                    cookies=self.cookie_dict,
-                                    headers=self.api_headers,
-                                    timeout=self.request_timeout)
-            print("API: Question info requested")
-        except (ConnectTimeout, ReadTimeout):
-            print("API: Request to Leetcode API timed out")
-            self.abort_all = True
-            return
+        for i in range(1 + self.max_retries):
+            try:
+                qinfo_r = requests.post(self._apiurl,
+                                        json=self._form_question_title_snippets_query(),
+                                        cookies=self.cookie_dict,
+                                        headers=self.api_headers,
+                                        timeout=self.request_timeout)
+                print("API: Question info requested")
+                break
+            except (ConnectTimeout, ReadTimeout):
+                print("API: Request to Leetcode API timed out")
+                if i == self.max_retries:
+                    self.abort_all = True
+                    return
 
         if qinfo_r.status_code != 200:
             raise ValueError(f"API: Request to Leetcode got an unexpected response: ${qinfo_r.status_code} - ${qinfo_r.reason}")
@@ -103,6 +101,22 @@ class LeetcodeRequester:
             obj["langSlug"]: obj for obj in q_data["codeSnippets"]
         }
         print("API: Question info retrieved")
+
+    def _form_question_title_query(self) -> dict:
+        return {
+            "query": "\n    query questionTitle($titleSlug: String!) {\n  question(titleSlug: $titleSlug) {\n    questionId\n    questionFrontendId\n    title\n    titleSlug\n    isPaidOnly\n    difficulty\n    likes\n    dislikes\n  }\n}\n",
+            "variables": {
+                "titleSlug": self.slug
+            },
+            "operationName": "questionTitle"
+        }
+
+    def _form_question_title_snippets_query(self) -> dict:
+        return {
+            "query":"\n    query questionEditorData($titleSlug: String!) {\n  question(titleSlug: $titleSlug) {\n    questionId\n    questionFrontendId\n    title\n    codeSnippets {\n      lang\n      langSlug\n      code\n    }\n    envInfo\n    enableRunCode\n  }\n}\n    ",
+            "variables": {"titleSlug": self.slug},
+            "operationName":"questionEditorData"
+        }
 
     
 if __name__ == "__main__":

@@ -189,7 +189,7 @@ if __name__ == "__main__":
         problem.request()
         problem.write_file()
         os.system('cls' if os.name == 'nt' else 'clear')
-        print(f'\nFile created at {problem.filepath}\n')
+        print(f'\nFile created at {os.path.relpath(problem.filepath)}\n')
     except FileExistsError as error:
         print(f'\nFILE ERROR: A file with the same file name already exists. Please use the --filename argument to provide a custom filename\n')
     except Exception as error:
