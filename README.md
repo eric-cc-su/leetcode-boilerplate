@@ -1,5 +1,5 @@
 # Leetcode Boilerplate
-![Release](https://img.shields.io/github/v/release/eric-cc-su/leetcode-boilerplate?display_name=Release)
+![Release](https://img.shields.io/github/v/release/eric-cc-su/leetcode-boilerplate)
 
 [![Python 3](https://github.com/eric-cc-su/leetcode-boilerplate/actions/workflows/python.yml/badge.svg)](https://github.com/eric-cc-su/leetcode-boilerplate/actions/workflows/python.yml)
 
