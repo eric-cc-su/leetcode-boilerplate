@@ -1,7 +1,11 @@
-# leetcode-boilerplate
-[![Python Script Testing](https://github.com/eric-cc-su/leetcode-boilerplate/actions/workflows/python.yml/badge.svg)](https://github.com/eric-cc-su/leetcode-boilerplate/actions/workflows/python.yml)
+# Leetcode Boilerplate
+![GitHub release (with filter)](https://img.shields.io/github/v/release/eric-cc-su/leetcode-boilerplate?filter=*&label=Release)
 
-Scripts to help with boilerplate associated with Leetcode problem-solution creation
+[![Python 3](https://github.com/eric-cc-su/leetcode-boilerplate/actions/workflows/python.yml/badge.svg)](https://github.com/eric-cc-su/leetcode-boilerplate/actions/workflows/python.yml)
+
+Python scripts to automate Leetcode boilerplate associated with problem-solution creation.
+
+Currently built for Python 3.
 
 ## Requirements
 - [requests](https://docs.python-requests.org/en/latest/index.html)
