@@ -16,8 +16,11 @@ PARENT_DIRECTORY = "../"
 
 class FilepathTest(FileWriteTestCase):
     def testCurrentDirectory(self) -> None:
-        problem = Problem(PROBLEM_STRING, METHOD_DEF, directory=CURRENT_DIRECTORY)
+        problem = Problem(LEETCODE_URL, filename=FILENAME, directory=CURRENT_DIRECTORY)
         self.assertEqual(problem.filepath, os.path.abspath(FILENAME))
+
+        problem.problem_string = PROBLEM_STRING
+        problem.class_and_method = METHOD_DEF
 
         self.assertFalse(os.path.exists(FILENAME))
         problem.write_file()
@@ -25,10 +28,13 @@ class FilepathTest(FileWriteTestCase):
         os.remove(problem.filepath)
 
     def testChildDirectory(self) -> None:
-        problem = Problem(PROBLEM_STRING, METHOD_DEF, directory=CHILD_DIRECTORY)
+        problem = Problem(LEETCODE_URL, filename=FILENAME, directory=CHILD_DIRECTORY)
         self.assertEqual(problem.filepath, os.path.join(os.path.abspath(CHILD_DIRECTORY), FILENAME))
 
         self.assertTrue(os.path.exists(CHILD_DIRECTORY))
+
+        problem.problem_string = PROBLEM_STRING
+        problem.class_and_method = METHOD_DEF
 
         self.assertFalse(os.path.exists(problem.filepath))
         problem.write_file()
@@ -37,8 +43,11 @@ class FilepathTest(FileWriteTestCase):
         os.remove(problem.filepath)
 
     def testParentDirectory(self) -> None:
-        problem = Problem(PROBLEM_STRING, METHOD_DEF, directory=PARENT_DIRECTORY)
+        problem = Problem(LEETCODE_URL, filename=FILENAME, directory=PARENT_DIRECTORY)
         self.assertEqual(problem.filepath, os.path.join(os.path.abspath(PARENT_DIRECTORY), FILENAME))
+
+        problem.problem_string = PROBLEM_STRING
+        problem.class_and_method = METHOD_DEF
 
         self.assertFalse(os.path.exists(problem.filepath))
         problem.write_file()
@@ -48,15 +57,21 @@ class FilepathTest(FileWriteTestCase):
 
     def testMissingSlash(self) -> None:
         # Tests whether a valid filepath is created in the event the directory name is provided without a trailing slash
-        problem = Problem(PROBLEM_STRING, METHOD_DEF, directory=PARENT_DIRECTORY.strip("/"))
+        problem = Problem(LEETCODE_URL, filename=FILENAME, directory=PARENT_DIRECTORY.strip("/"))
         self.assertEqual(problem.filepath, os.path.join(os.path.abspath(PARENT_DIRECTORY.strip("/")), FILENAME))
+
+        problem.problem_string = PROBLEM_STRING
+        problem.class_and_method = METHOD_DEF
 
         problem.write_file()
         self.assertTrue(os.path.exists(problem.filepath))
         os.remove(problem.filepath)
         
-        problem = Problem(PROBLEM_STRING, METHOD_DEF, directory=CHILD_DIRECTORY.strip("/"))
+        problem = Problem(LEETCODE_URL, filename=FILENAME, directory=CHILD_DIRECTORY.strip("/"))
         self.assertEqual(problem.filepath, os.path.join(os.path.abspath(CHILD_DIRECTORY.strip("/")), FILENAME))
+
+        problem.problem_string = PROBLEM_STRING
+        problem.class_and_method = METHOD_DEF
 
         self.assertTrue(os.path.exists(CHILD_DIRECTORY))
         problem.write_file()

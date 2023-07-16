@@ -32,7 +32,7 @@ DATA_STRUCTURE_TEST = {
 }
 
 
-class Problem:
+class ManualProblem:
     def __init__(self, problem_string: str, method_def: str,
                  directory: Optional[str]=".",
                  classname: Optional[str]=None, no_encase: Optional[bool]=False,
