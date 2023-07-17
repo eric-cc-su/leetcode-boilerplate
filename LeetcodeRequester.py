@@ -15,7 +15,7 @@ class LeetcodeRequester:
 
         :param str url: A URL to the Leetcode question
         :param int request_timeout: The amount of time in seconds to allow single HTTP requests to stay alive
-        :param int retries: The maximum number of times to retry a connection that has failed
+        :param int max_retries: The maximum number of times to retry a connection that has failed
         """
         # Requester
         self.request_timeout = request_timeout
