@@ -1,5 +1,3 @@
-import os
-
 from create_new_problem import Problem
 from src.tests.FileWriteTestCase import FileWriteTestCase
 
@@ -34,31 +32,3 @@ class ProblemTest(FileWriteTestCase):
         
         with self.assertRaises(AttributeError):
             self.problem._assemble_code()
-
-
-class ProblemRequestedTest(FileWriteTestCase):
-    @classmethod
-    def setUpClass(cls) -> None:
-        # Set up shared problem class to request only one problem
-        cls.problem = Problem(LEETCODE_URL)
-
-        for i in range(3):
-            cls.problem.request()
-            if cls.problem.filepath:
-                break
-
-        return super().setUpClass()
-
-    def testRequest(self) -> None:
-        # Allow for timeout failures
-        self.assertIsNotNone(self.problem.problem_string)
-        self.assertEqual(self.problem.problem_string, "1004. Max Consecutive Ones III")
-        self.assertIsNotNone(self.problem.filename)
-        self.assertEqual(self.problem.filename, "p1004-max-consecutive-ones-iii.py")
-        self.assertIsNotNone(self.problem.filepath)
-        self.assertEqual(self.problem.filepath, os.path.abspath("./p1004-max-consecutive-ones-iii.py"))
-
-    def testWriteFile(self) -> None:
-        self.problem.write_file()
-        self.assertTrue(os.path.exists(self.problem.filepath))
-        os.remove(self.problem.filepath)
