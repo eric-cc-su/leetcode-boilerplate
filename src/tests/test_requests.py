@@ -11,8 +11,8 @@ CSRFTOKEN_DUMMY = "123abc"
 TEST_SLUG = "test-problem"
 TEST_QUESTION_NUM = "123"
 TEST_QUESTION_TITLE = TEST_SLUG.replace("-", " ").capitalize()
-LEETCODE_URL = "https://leetcode.com/problems/max-consecutive-ones-iii/?envType=study-plan-v2&envId=leetcode-75"
 LEETCODE_TEST_URL = f"https://leetcode.com/problems/{TEST_SLUG}/"
+LEETCODE_TEST_URL_EXT = f"https://leetcode.com/problems/{TEST_SLUG}/?envType=study-plan-v2&envId=leetcode-75"
 LEETCODE_API_TEST_URL = "https://leetcode.com/graphql/"
 
 EDITOR_REQUEST_QUERY = {
@@ -47,7 +47,7 @@ EDITOR_RESPONSE_DATA = {
 
 class RequesterTest(TestCase):
     def setUp(self) -> None:
-        self.requester = LeetcodeRequester(LEETCODE_URL)
+        self.requester = LeetcodeRequester(LEETCODE_TEST_URL)
         return super().setUp()
 
     def testInit(self) -> None:
@@ -56,9 +56,10 @@ class RequesterTest(TestCase):
         self.assertFalse(self.requester.abort_all)
 
         self.assertIsInstance(self.requester.url, str)
-        self.assertEqual(self.requester.url, LEETCODE_URL)
+        self.assertEqual(self.requester.url, LEETCODE_TEST_URL)
         self.assertIsInstance(self.requester.slug, str)
-    
+        self.assertEqual(self.requester.slug, TEST_SLUG)
+
         self.assertIsInstance(self.requester.cookie_dict, dict)
         self.assertIsInstance(self.requester.api_headers, dict)
         self.assertEqual(len(self.requester.cookie_dict), 0)
@@ -67,12 +68,30 @@ class RequesterTest(TestCase):
         self.assertIsNone(self.requester.question_num)
         self.assertIsNone(self.requester.question_title)
         self.assertIsNone(self.requester.code_snippets)
+
+    def testSetSlug(self) -> None:
+        self.assertIsInstance(self.requester.url, str)
+        self.assertEqual(self.requester.url, LEETCODE_TEST_URL)
+        self.assertIsInstance(self.requester.slug, str)
+        self.assertEqual(self.requester.slug, TEST_SLUG)
+
+        self.requester.setUrl(LEETCODE_TEST_URL.strip("/"))
+        self.assertIsInstance(self.requester.url, str)
+        self.assertEqual(self.requester.url, LEETCODE_TEST_URL.strip("/"))
+        self.assertIsInstance(self.requester.slug, str)
+        self.assertEqual(self.requester.slug, TEST_SLUG)
+
+        self.requester.setUrl(LEETCODE_TEST_URL_EXT)
+        self.assertIsInstance(self.requester.url, str)
+        self.assertEqual(self.requester.url, LEETCODE_TEST_URL_EXT)
+        self.assertIsInstance(self.requester.slug, str)
+        self.assertEqual(self.requester.slug, TEST_SLUG)
     
     @responses.activate
     def testMainConnectTimeout(self) -> None:
         """ Tests a simulated connection timeout for the GET request to Leetcode """
         responses.get(
-            LEETCODE_URL,
+            LEETCODE_TEST_URL,
             body=ConnectTimeout()
         )
         self.requester._request_main()
@@ -88,7 +107,7 @@ class RequesterTest(TestCase):
     def testMainReadTimeout(self) -> None:
         """ Tests a simulated read timeout for the GET request to Leetcode """
         responses.get(
-            LEETCODE_URL,
+            LEETCODE_TEST_URL,
             body=ReadTimeout()
         )
         self.requester._request_main()

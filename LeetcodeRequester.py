@@ -26,9 +26,8 @@ class LeetcodeRequester:
         self._apiurl = "https://leetcode.com/graphql/"
         # Flag to stop further execution in case of failure
         self.abort_all = False
-        
-        self.url = url
-        self.slug = re_match(self._urlpattern, self.url).group('slug')
+
+        self.setUrl(url)
 
         self.cookie_dict = {}
         self.api_headers = {}
@@ -37,6 +36,10 @@ class LeetcodeRequester:
         self.question_num = None
         self.question_title = None
         self.code_snippets = None
+
+    def setUrl(self, new_url=str) -> None:
+        self.url = new_url
+        self.slug = re_match(self._urlpattern, self.url).group('slug')
 
     def request(self) -> None:
         print("\nRequesting...")

@@ -1,12 +1,12 @@
 from create_new_problem import Problem
 from src.tests.FileWriteTestCase import FileWriteTestCase
 
-LEETCODE_URL = "https://leetcode.com/problems/max-consecutive-ones-iii/?envType=study-plan-v2&envId=leetcode-75"
-
+TEST_SLUG = "test-problem"
+LEETCODE_TEST_URL = f"https://leetcode.com/problems/{TEST_SLUG}/"
 
 class ProblemTest(FileWriteTestCase):
     def setUp(self) -> None:
-        self.problem = Problem(LEETCODE_URL)
+        self.problem = Problem(LEETCODE_TEST_URL)
         return super().setUp()
 
     def testInit(self) -> None:
