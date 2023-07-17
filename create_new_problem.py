@@ -1,6 +1,6 @@
 # A script to create the boilerplate for a new Leetcode problem that comes with unit testing 
 #
-# Python 3.6+ required
+# Python 3.7+ required
 #
 # Inputs:
 # - The Leetcode URL
@@ -15,7 +15,7 @@ from re import findall, search as re_search
 from sys import argv
 from typing import Optional
 
-from requester import LeetcodeRequester
+from LeetcodeRequester import LeetcodeRequester
 
 # Constant for how to indent (currently using one tab equals four spaces)
 INDENT = "    "
@@ -34,9 +34,12 @@ DATA_STRUCTURE_TEST = {
 class Problem:
     def __init__(self, url: str,
                  directory: Optional[str]=".",
-                 data_structure: Optional[str]=None, filename: Optional[str]=None) -> None:
+                 data_structure: Optional[str]=None,
+                 filename: Optional[str]=None,
+                 timeout: Optional[int]=10,
+                 max_retries: Optional[int]=2) -> None:
         # Initiate requester
-        self._requester = LeetcodeRequester(url)
+        self._requester = LeetcodeRequester(url, request_timeout=timeout, max_retries=max_retries)
 
         # Handle problem string
         self.problem_string = None
@@ -70,6 +73,11 @@ class Problem:
         """
         Use the requester's data to assemble the problem title string
         """
+        if not self._requester.question_num:
+            raise AttributeError("Could not determine question number")
+        if not self._requester.question_title:
+            raise AttributeError("Could not determine question title")
+
         self.problem_string = f'{self._requester.question_num}. {self._requester.question_title}'
         if not self.filename:
             self.filename = f'p{self._requester.question_num}-{self._requester.slug}.py'
@@ -79,10 +87,13 @@ class Problem:
         """
         Use requester's code snippet to assemble code content
         """
+        if not self._requester.code_snippets:
+            raise AttributeError("Could not find starting code snippets")
+
         if self._requester.code_snippets.get("python3"):
             self.class_and_method = self._requester.code_snippets["python3"]["code"]
         else:
-            raise ValueError("Could not find starting code snippet")
+            raise KeyError("Could not find starting Python 3 code snippet")
         
         # Pattern to ID class name
         class_pattern = r'class (?P<classname>\w+)\([\w\s:\[\],]+?\)?:'
@@ -169,6 +180,8 @@ if __name__ == "__main__":
     parser.add_argument("--directory", help="The directory to create the new file. Default value is the current working directory", default=".")
     parser.add_argument("--data-structure", help="Data structure to include.", choices=[None, "linked_list", "tree"])
     parser.add_argument("--filename", help="Provide a manual filename. A filename will be generated in the format 'p#-problem_name.py' if not provided")
+    parser.add_argument("--timeout", help="Specify a timeout, in seconds, for all requests. Default value is 10s.", default=10)
+    parser.add_argument("--max-retries", help="Specify a maximum number of retries for failed requests. Default value is 2", default=2)
 
     args=parser.parse_args()
 
@@ -181,7 +194,7 @@ if __name__ == "__main__":
         problem.request()
         problem.write_file()
         os.system('cls' if os.name == 'nt' else 'clear')
-        print(f'\nFile created at {problem.filepath}\n')
+        print(f'\nFile created at {os.path.relpath(problem.filepath)}\n')
     except FileExistsError as error:
         print(f'\nFILE ERROR: A file with the same file name already exists. Please use the --filename argument to provide a custom filename\n')
     except Exception as error:

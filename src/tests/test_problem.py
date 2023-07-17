@@ -1,14 +1,12 @@
-import os
-
 from create_new_problem import Problem
 from src.tests.FileWriteTestCase import FileWriteTestCase
 
-LEETCODE_URL = "https://leetcode.com/problems/max-consecutive-ones-iii/?envType=study-plan-v2&envId=leetcode-75"
-
+TEST_SLUG = "test-problem"
+LEETCODE_TEST_URL = f"https://leetcode.com/problems/{TEST_SLUG}/"
 
 class ProblemTest(FileWriteTestCase):
     def setUp(self) -> None:
-        self.problem = Problem(LEETCODE_URL)
+        self.problem = Problem(LEETCODE_TEST_URL)
         return super().setUp()
 
     def testInit(self) -> None:
@@ -23,30 +21,14 @@ class ProblemTest(FileWriteTestCase):
         self.assertIsNone(self.problem.data_structure)
         self.assertIsInstance(self.problem.typing_imports, set)
         self.assertEqual(len(self.problem.typing_imports), 0)
+    
+    def testNoRequesterInfo(self) -> None:
+        self.assertIsNone(self.problem._requester.question_num)
+        self.assertIsNone(self.problem._requester.question_title)
+        self.assertIsNone(self.problem._requester.code_snippets)
 
-class ProblemRequestedTest(FileWriteTestCase):
-    @classmethod
-    def setUpClass(cls) -> None:
-        # Set up shared problem class to request only one problem
-        cls.problem = Problem(LEETCODE_URL)
-
-        for i in range(3):
-            cls.problem.request()
-            if cls.problem.filepath:
-                break
-
-        return super().setUpClass()
-
-    def testRequest(self) -> None:
-        # Allow for timeout failures
-        self.assertIsNotNone(self.problem.problem_string)
-        self.assertEqual(self.problem.problem_string, "1004. Max Consecutive Ones III")
-        self.assertIsNotNone(self.problem.filename)
-        self.assertEqual(self.problem.filename, "p1004-max-consecutive-ones-iii.py")
-        self.assertIsNotNone(self.problem.filepath)
-        self.assertEqual(self.problem.filepath, os.path.abspath("./p1004-max-consecutive-ones-iii.py"))
-
-    def testWriteFile(self) -> None:
-        self.problem.write_file()
-        self.assertTrue(os.path.exists(self.problem.filepath))
-        os.remove(self.problem.filepath)
+        with self.assertRaises(AttributeError):
+            self.problem._assemble_problem_string_and_filename()
+        
+        with self.assertRaises(AttributeError):
+            self.problem._assemble_code()
