@@ -1,6 +1,6 @@
 # A script to create the boilerplate for a new Leetcode problem that comes with unit testing 
 #
-# Python 3.6+ required
+# Python 3.7+ required
 #
 # Inputs:
 # - The Leetcode URL
