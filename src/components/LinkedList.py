@@ -25,14 +25,14 @@ class LinkedList:
         self.obj_list = object_list
 
         if self.obj_list:
-            self.head = LinkedList.convertListToLinkedList(self.obj_list)
+            self.setWithList(self.obj_list)
         elif self.obj_list is not None:
             raise TypeError(f"Cannot initialize with non-list type {type(self.obj_list)}")
 
     @staticmethod
     def convertListToLinkedList(normlist: List[int]) -> ListNode:
         """
-        Converts the given Python list into a linked list
+        Converts the given Python list into a linked list and returns the head node
         """
         if type(normlist) != list:
             raise TypeError(f"Cannot convert non-list type: {type(normlist)}")
@@ -46,6 +46,13 @@ class LinkedList:
 
         return head
     
+    def setWithList(self, normlist: List[int]) -> None:
+        """
+        Public method to set the entire linked list with a normal object list
+        """
+        self.obj_list = normlist
+        self.head = LinkedList.convertListToLinkedList(normlist)
+
     @staticmethod
     def assertLinkedListEqual(testcase: unittest.TestCase, head: ListNode, expected: List[int]):
         """
@@ -61,7 +68,6 @@ class LinkedList:
         testcase.assertIsNone(test_head)
         testcase.assertEqual(length, len(expected))
 
-    
     def assertListEqual(self, testcase: unittest.TestCase, expected: List[int]):
         """
         Checks whether the current instance's linked list is equal to the expected list of objects

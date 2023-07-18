@@ -21,7 +21,7 @@ from LeetcodeRequester import LeetcodeRequester
 INDENT = "    "
 
 DATA_STRUCTURE_IMPORTS = {
-    'linked_list': 'from leetcode_linkedlist import LinkedList, ListNode\n',
+    'linked_list': 'from LinkedList import LinkedList, ListNode\n',
     'tree': 'from leetcode_treenode import Tree, TreeNode\n',
 }
 

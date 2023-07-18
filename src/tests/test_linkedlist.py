@@ -6,6 +6,15 @@ class LinkedListClassTest(unittest.TestCase):
     """
     Test the LinkedList class
     """
+    def testNoInit(self) -> None:
+        """
+        Tests initialization without any input at all
+        """
+        ll = LinkedList()
+        self.assertIsInstance(ll, LinkedList)
+        self.assertIsNone(ll.head)
+        self.assertIsNone(ll.obj_list)
+
     def testObjListInit(self) -> None:
         """
         Tests initialization with an object list
@@ -49,8 +58,29 @@ class LinkedListClassTest(unittest.TestCase):
             ll = LinkedList(object_list=1)
         self.assertIsNone(ll)
 
+    def testSetWithList(self) -> None:
+        """
+        Tests the setWithList method to change the entire linked list
+        """
+        testlist = [1,2,3,4,5]
+        ll = LinkedList()
+        ll.setWithList(testlist)
+        self.assertIsInstance(ll.head, ListNode)
+        self.assertIsInstance(ll.obj_list, list)
+        self.assertEqual(ll.head.val, testlist[0])
+        self.assertListEqual(ll.obj_list, testlist)
+        ll.assertListEqual(self, testlist)
 
-class LinkedListConversionTestMethods(unittest.TestCase):
+        testlist2 = [9,3,2]
+        ll.setWithList(testlist2)
+        self.assertIsInstance(ll.head, ListNode)
+        self.assertIsInstance(ll.obj_list, list)
+        self.assertEqual(ll.head.val, testlist2[0])
+        self.assertListEqual(ll.obj_list, testlist2)
+        ll.assertListEqual(self, testlist2)
+
+
+class LinkedListConversionMethods(unittest.TestCase):
     """
     Methods to test the utility function convertListToLinkedList
     """
@@ -73,3 +103,20 @@ class LinkedListConversionTestMethods(unittest.TestCase):
         Tests that the linked list has been created with all nodes in the expected order
         """
         self.ll.assertListEqual(self, self.default_list)
+
+    def testStaticConvertListToLL(self) -> None:
+        """
+        Tests LinkedList.convertListToLinkedList static method
+        """
+        head = LinkedList.convertListToLinkedList(self.default_list)
+        self.assertIsInstance(head, ListNode)
+        for item in self.default_list:
+            self.assertEqual(item, head.val)
+            head = head.next
+
+        self.assertIsNone(head)
+
+    def testStaticAssertLLEqual(self) -> None:
+        head = LinkedList.convertListToLinkedList(self.default_list)
+        self.assertIsInstance(head, ListNode)
+        LinkedList.assertLinkedListEqual(self, head, self.default_list)
