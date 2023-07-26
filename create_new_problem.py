@@ -177,9 +177,9 @@ if __name__ == "__main__":
         description="Creates a new Python 3 file with complete boilerplate for a new Leetcode problem that comes with unit testing and support for Leetcode's classes of certain data structures."
     )
 
-    parser.add_argument("--directory", help="The directory to create the new file. Default value is the current working directory", default=".")
+    parser.add_argument("-d", "--directory", help="The directory to create the new file. Default value is the current working directory", default=".")
     parser.add_argument("--data-structure", help="Data structure to include.", choices=[None, "linked_list", "tree"])
-    parser.add_argument("--filename", help="Provide a manual filename. A filename will be generated in the format 'p#-problem_name.py' if not provided")
+    parser.add_argument("-f", "--filename", help="Provide a manual filename. A filename will be generated in the format 'p#-problem_name.py' if not provided")
     parser.add_argument("--timeout", help="Specify a timeout, in seconds, for all requests. Default value is 10s.", default=10)
     parser.add_argument("--max-retries", help="Specify a maximum number of retries for failed requests. Default value is 2", default=2)
 
